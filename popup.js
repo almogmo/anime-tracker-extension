@@ -3,17 +3,12 @@
  * Handles adding anime, tracking episodes, and managing feature settings.
  *
  * Storage strategy:
- *   - animeList  -> chrome.storage.local  (entries include screenshot thumbnails;
- *                   chrome.storage.sync has an 8KB/item limit that screenshots blow past)
+ *   - animeList  -> chrome.storage.local  (kept local for headroom/consistency)
  *   - settings   -> chrome.storage.sync   (tiny; nice to sync across devices, and
  *                   content.js reads them from sync)
  */
 
 console.log('[DEBUG] popup.js loaded');
-
-// Thumbnail sizing: keep each stored screenshot small so local storage doesn't fill up.
-const THUMB_MAX_WIDTH = 320;
-const THUMB_JPEG_QUALITY = 0.7;
 
 // Wait for DOM to be fully ready before wiring anything up.
 if (document.readyState === 'loading') {
@@ -82,7 +77,7 @@ async function handleAddAnime(e) {
     return;
   }
 
-  // Look up the active tab for URL + screenshot.
+  // Look up the active tab for its URL (no screenshot).
   const tab = await getActiveTab();
 
   const newAnime = {
@@ -90,19 +85,8 @@ async function handleAddAnime(e) {
     title,
     episode,
     url: tab ? tab.url : null,
-    imagePreview: null,
     addedDate: new Date().toLocaleDateString(),
   };
-
-  // Capture a downscaled thumbnail (best-effort — never blocks the save).
-  if (tab) {
-    try {
-      newAnime.imagePreview = await captureThumbnail(tab.windowId);
-      console.log('[DEBUG] Thumbnail captured:', !!newAnime.imagePreview);
-    } catch (err) {
-      console.log('[DEBUG] Thumbnail capture skipped:', err.message);
-    }
-  }
 
   saveAnimeToStorage(newAnime);
 }
@@ -114,35 +98,6 @@ function getActiveTab() {
   return new Promise((resolve) => {
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
       resolve(tabs && tabs[0] ? tabs[0] : null);
-    });
-  });
-}
-
-/**
- * Capture the visible tab and downscale it to a small JPEG thumbnail.
- * Returns a data URL, or null if capture isn't possible (e.g. chrome:// pages).
- */
-function captureThumbnail(windowId) {
-  return new Promise((resolve, reject) => {
-    chrome.tabs.captureVisibleTab(windowId, { format: 'png' }, (dataUrl) => {
-      if (chrome.runtime.lastError || !dataUrl) {
-        reject(new Error(chrome.runtime.lastError?.message || 'capture failed'));
-        return;
-      }
-
-      // Downscale via canvas to keep storage small.
-      const img = new Image();
-      img.onload = () => {
-        const scale = Math.min(1, THUMB_MAX_WIDTH / img.width);
-        const canvas = document.createElement('canvas');
-        canvas.width = Math.round(img.width * scale);
-        canvas.height = Math.round(img.height * scale);
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-        resolve(canvas.toDataURL('image/jpeg', THUMB_JPEG_QUALITY));
-      };
-      img.onerror = () => reject(new Error('thumbnail decode failed'));
-      img.src = dataUrl;
     });
   });
 }
@@ -242,10 +197,6 @@ function loadAnimeList() {
  * Build the HTML for a single anime entry.
  */
 function createAnimeItemHTML(anime) {
-  const previewHtml = anime.imagePreview
-    ? `<img src="${anime.imagePreview}" alt="" style="width: 100%; height: auto; border-radius: 4px; margin-bottom: 8px; max-height: 80px; object-fit: cover;">`
-    : '';
-
   const linkHtml = anime.url
     ? `<p style="margin-top: 4px;"><a href="${escapeHTML(anime.url)}" target="_blank" style="color: #00d4ff; text-decoration: none; font-size: 11px; word-break: break-all;">Open link →</a></p>`
     : '';
@@ -253,7 +204,6 @@ function createAnimeItemHTML(anime) {
   return `
     <div class="anime-item">
       <div class="anime-info" style="flex: 1;">
-        ${previewHtml}
         <h3>${escapeHTML(anime.title)}</h3>
         <p>Ep: <span id="ep-display-${anime.id}">${anime.episode}</span></p>
         ${linkHtml}
