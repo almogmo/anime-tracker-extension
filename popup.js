@@ -23,6 +23,8 @@ function initializePopup() {
   const form = document.getElementById('animeForm');
   const titleInput = document.getElementById('animeTitle');
   const episodeInput = document.getElementById('currentEpisode');
+  const animeUrlInput = document.getElementById('animeUrl');
+  const captureUrlBtn = document.getElementById('captureUrlBtn');
   const animeListContainer = document.getElementById('animeListContainer');
   const spoilerShieldToggle = document.getElementById('spoilerShield');
   const netflixAutoSkipToggle = document.getElementById('netflixAutoSkip');
@@ -65,11 +67,38 @@ function initializePopup() {
       id: Date.now(),
       title: title,
       episode: episode,
+      url: animeUrlInput.value || null,
+      imagePreview: null, // Will be set after screenshot
       addedDate: new Date().toLocaleDateString(),
     };
 
     console.log('[DEBUG] New anime object:', newAnime);
 
+    // Capture screenshot of current tab if URL provided
+    if (animeUrlInput.value) {
+      chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+        if (tabs[0]) {
+          chrome.tabs.captureVisibleTab(tabs[0].windowId, { format: 'png' }, (screenshotUrl) => {
+            if (screenshotUrl) {
+              newAnime.imagePreview = screenshotUrl;
+              console.log('[DEBUG] Screenshot captured');
+            }
+            saveAnimeToStorage(newAnime);
+          });
+        } else {
+          saveAnimeToStorage(newAnime);
+        }
+      });
+    } else {
+      saveAnimeToStorage(newAnime);
+    }
+  });
+}
+
+/**
+ * Save anime to storage
+ */
+function saveAnimeToStorage(newAnime) {
     // Get existing list from storage
     chrome.storage.sync.get(['animeList'], (result) => {
       console.log('[DEBUG] Current storage result:', result);
@@ -119,6 +148,19 @@ function initializePopup() {
     netflixAutoSkipToggle.addEventListener('change', () => {
       console.log('[DEBUG] Netflix auto-skip toggled:', netflixAutoSkipToggle.checked);
       chrome.storage.sync.set({ netflixAutoSkip: netflixAutoSkipToggle.checked });
+    });
+  }
+
+  // Capture URL from current tab
+  if (captureUrlBtn) {
+    captureUrlBtn.addEventListener('click', () => {
+      console.log('[DEBUG] Capture URL button clicked');
+      chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+        if (tabs[0]) {
+          animeUrlInput.value = tabs[0].url;
+          console.log('[DEBUG] URL captured:', tabs[0].url);
+        }
+      });
     });
   }
 
@@ -197,13 +239,23 @@ function loadAnimeList() {
  * Generate HTML for a single anime item
  */
 function createAnimeItemHTML(anime) {
+  const previewHtml = anime.imagePreview
+    ? `<img src="${anime.imagePreview}" style="width: 100%; height: auto; border-radius: 4px; margin-bottom: 8px; max-height: 80px; object-fit: cover;">`
+    : '';
+
+  const linkHtml = anime.url
+    ? `<p style="margin-top: 4px;"><a href="${escapeHTML(anime.url)}" target="_blank" style="color: #00d4ff; text-decoration: none; font-size: 11px; word-break: break-all;">Link →</a></p>`
+    : '';
+
   return `
     <div class="anime-item">
-      <div class="anime-info">
+      <div class="anime-info" style="flex: 1;">
+        ${previewHtml}
         <h3>${escapeHTML(anime.title)}</h3>
         <p>Ep: <span id="ep-display-${anime.id}">${anime.episode}</span></p>
+        ${linkHtml}
       </div>
-      <div class="anime-actions">
+      <div class="anime-actions" style="flex-direction: column; gap: 6px;">
         <input
           type="number"
           id="episode-${anime.id}"
