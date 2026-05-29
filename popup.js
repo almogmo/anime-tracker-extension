@@ -123,20 +123,24 @@ function saveAnimeToStorage(newAnime) {
         form.reset();
         titleInput.focus();
 
-        // Reload list display
-        loadAnimeList();
-
         // Show success animation
         const btn = form.querySelector('.btn-add');
         if (btn) {
           const originalText = btn.textContent;
           btn.textContent = '✓ Added!';
           btn.style.background = 'linear-gradient(135deg, #00d4ff 0%, #0099cc 100%)';
-          setTimeout(() => {
+        }
+
+        // Reload list display with small delay to ensure storage is updated
+        setTimeout(() => {
+          console.log('[DEBUG] Calling loadAnimeList after save');
+          loadAnimeList();
+
+          if (btn) {
             btn.textContent = originalText;
             btn.style.background = '';
-          }, 1500);
-        }
+          }
+        }, 300);
       });
     });
   });
@@ -173,9 +177,12 @@ function loadAnimeList() {
   const animeListContainer = document.getElementById('animeListContainer');
 
   if (!animeListContainer) {
-    console.error('[ERROR] animeListContainer not found');
+    console.error('[ERROR] animeListContainer not found - DOM element missing!');
+    console.log('[ERROR] All IDs on page:', document.querySelectorAll('[id]').length);
     return;
   }
+
+  console.log('[DEBUG] animeListContainer found, clearing and reloading...');
 
   chrome.storage.sync.get(['animeList'], (result) => {
     const animeList = result.animeList || [];
