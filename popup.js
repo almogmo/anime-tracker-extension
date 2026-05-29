@@ -79,12 +79,14 @@ async function handleAddAnime(e) {
 
   // Look up the active tab for its URL (no screenshot).
   const tab = await getActiveTab();
+  const url = tab && tab.url ? tab.url : null;
+  console.log('[DEBUG] Captured tab URL:', url);
 
   const newAnime = {
     id: Date.now(),
     title,
     episode,
-    url: tab ? tab.url : null,
+    url,
     addedDate: new Date().toLocaleDateString(),
   };
 
@@ -92,12 +94,22 @@ async function handleAddAnime(e) {
 }
 
 /**
- * Promise wrapper around chrome.tabs.query for the active tab.
+ * Find the active browser tab from the popup.
+ *
+ * From a popup, `currentWindow` can resolve to the popup itself and return no
+ * tab, so we prefer `lastFocusedWindow` and fall back to a global active query.
  */
 function getActiveTab() {
   return new Promise((resolve) => {
-    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-      resolve(tabs && tabs[0] ? tabs[0] : null);
+    chrome.tabs.query({ active: true, lastFocusedWindow: true }, (tabs) => {
+      if (tabs && tabs[0]) {
+        resolve(tabs[0]);
+        return;
+      }
+      // Fallback: any active tab in any normal window.
+      chrome.tabs.query({ active: true }, (all) => {
+        resolve(all && all[0] ? all[0] : null);
+      });
     });
   });
 }
