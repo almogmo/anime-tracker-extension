@@ -266,59 +266,82 @@ function initNetflixAutoSkip() {
     characterData: true,
     attributes: false,
   });
+
+  // Safety-net poll: the observer misses pure attribute toggles (e.g. the
+  // seamless "next episode" countdown), so also check on a 1s interval.
+  setInterval(() => {
+    if (state.netflixAutoSkipEnabled) {
+      skipNextButton();
+    }
+  }, 1000);
 }
 
+// Netflix's stable, language-independent button identifiers (data-uia).
+// These are the most reliable way to find skip/next controls.
+const NETFLIX_UIA_SELECTORS = [
+  '[data-uia="player-skip-intro"]',
+  '[data-uia="player-skip-recap"]',
+  '[data-uia="next-episode-seamless-button"]',
+  '[data-uia="next-episode-seamless-button-draining"]',
+  '[data-uia*="skip"]',
+  '[data-uia*="next-episode"]',
+];
+
+// Fallback text/aria keywords — multilingual (English + Hebrew) so it works
+// regardless of the user's Netflix language setting.
+const NETFLIX_TEXT_KEYWORDS = [
+  'skip intro',
+  'skip recap',
+  'skip credits',
+  'skip',
+  'next episode',
+  'דלג', // "skip" (Hebrew)
+  'הפרק הבא', // "next episode" (Hebrew)
+  'הבא', // "next" (Hebrew)
+];
+
 /**
- * Find and click skip button on Netflix
+ * Find and click a Netflix skip / next-episode button.
  */
 function skipNextButton() {
-  // Common Netflix button selectors
-  const buttonSelectors = [
-    'button[aria-label*="Skip"]',
-    'button[aria-label*="Next"]',
-    'button:contains("Skip Intro")',
-    'button:contains("Skip Credits")',
-    'button:contains("Next Episode")',
-    '[data-testid*="skip"]',
-    '[data-testid*="next"]',
-  ];
+  // 1) Try the reliable data-uia selectors first.
+  for (const selector of NETFLIX_UIA_SELECTORS) {
+    const el = document.querySelector(selector);
+    if (el && isButtonVisible(el)) {
+      scheduleButtonClick(el, selector);
+      return;
+    }
+  }
 
-  // More flexible search by button text content
-  const buttons = document.querySelectorAll('button');
-
+  // 2) Fall back to scanning buttons by text / aria-label (multilingual).
+  const buttons = document.querySelectorAll('button, [role="button"]');
   for (const button of buttons) {
-    const text = button.textContent.toLowerCase();
+    const text = (button.textContent || '').toLowerCase();
     const ariaLabel = (button.getAttribute('aria-label') || '').toLowerCase();
+    const haystack = text + ' ' + ariaLabel;
 
-    // Check for skip or next episode buttons
     if (
-      (text.includes('skip') || ariaLabel.includes('skip') ||
-       text.includes('next episode') || ariaLabel.includes('next episode')) &&
+      NETFLIX_TEXT_KEYWORDS.some((kw) => haystack.includes(kw)) &&
       isButtonVisible(button)
     ) {
-      scheduleButtonClick(button, text);
+      scheduleButtonClick(button, haystack.trim().slice(0, 40));
       return; // Only click one button at a time
     }
   }
 }
 
 /**
- * Check if button is visible on screen
+ * Check if an element is actually rendered/clickable.
+ * Intentionally lenient — Netflix controls sit flush against screen edges,
+ * so we do NOT require the element to be fully inside the viewport.
  */
 function isButtonVisible(element) {
   const style = window.getComputedStyle(element);
-
-  if (style.display === 'none' || style.visibility === 'hidden') {
+  if (style.display === 'none' || style.visibility === 'hidden' || style.opacity === '0') {
     return false;
   }
-
-  const rect = element.getBoundingClientRect();
-  return (
-    rect.top >= 0 &&
-    rect.left >= 0 &&
-    rect.bottom <= window.innerHeight &&
-    rect.right <= window.innerWidth
-  );
+  // offsetParent is null for display:none / detached; size > 0 means it's laid out.
+  return element.offsetWidth > 0 && element.offsetHeight > 0;
 }
 
 /**
