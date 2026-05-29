@@ -1,0 +1,39 @@
+# IDE & Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Node (if using npm/webpack in future)
+node_modules/
+package-lock.json
+npm-debug.log
+
+# Build artifacts
+dist/
+build/
+*.zip
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# OS
+Thumbs.db
+.DS_Store
+*.log
+
+# Temporary
+*.tmp
+.temp/
+
+# Testing
+coverage/
+test-results/
+
+# Chrome extension specific
+*.pem
+private_key.pem
