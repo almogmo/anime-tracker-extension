@@ -277,27 +277,55 @@ function initNetflixAutoSkip() {
 }
 
 // Netflix's stable, language-independent button identifiers (data-uia).
-// These are the most reliable way to find skip/next controls.
+// These are the most reliable way to find skip/next controls and work in
+// EVERY UI language without any translation — Netflix keeps these attributes
+// identical regardless of the user's language. Intro is handled here first.
 const NETFLIX_UIA_SELECTORS = [
   '[data-uia="player-skip-intro"]',
   '[data-uia="player-skip-recap"]',
+  '[data-uia="player-skip-preplay"]',
   '[data-uia="next-episode-seamless-button"]',
   '[data-uia="next-episode-seamless-button-draining"]',
   '[data-uia*="skip"]',
   '[data-uia*="next-episode"]',
 ];
 
-// Fallback text/aria keywords — multilingual (English + Hebrew) so it works
-// regardless of the user's Netflix language setting.
+// Fallback text/aria keywords for "skip" and "next" across ~15 languages.
+// This is the safety net that makes it "work in every language" without
+// calling an external translation API (which would need a key, add network
+// latency, and could fail mid-playback). All lowercase for case-insensitive
+// matching.
 const NETFLIX_TEXT_KEYWORDS = [
-  'skip intro',
-  'skip recap',
-  'skip credits',
-  'skip',
-  'next episode',
-  'דלג', // "skip" (Hebrew)
-  'הפרק הבא', // "next episode" (Hebrew)
-  'הבא', // "next" (Hebrew)
+  // English
+  'skip', 'next episode', 'play next',
+  // Hebrew
+  'דלג', 'הפרק הבא', 'הבא',
+  // Spanish
+  'omitir', 'saltar', 'siguiente episodio',
+  // French
+  'passer', 'ignorer', 'épisode suivant',
+  // German
+  'überspringen', 'nächste folge',
+  // Italian
+  'salta', 'prossimo episodio',
+  // Portuguese
+  'pular', 'ignorar', 'próximo episódio',
+  // Dutch
+  'overslaan', 'volgende aflevering',
+  // Russian
+  'пропустить', 'следующий эпизод',
+  // Turkish
+  'atla', 'sonraki bölüm',
+  // Polish
+  'pomiń', 'następny odcinek',
+  // Arabic
+  'تخطي', 'الحلقة التالية',
+  // Japanese
+  'スキップ', '次のエピソード',
+  // Korean
+  '건너뛰기', '다음 회',
+  // Chinese (Simplified)
+  '跳过', '下一集',
 ];
 
 /**
