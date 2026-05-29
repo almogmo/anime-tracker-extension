@@ -175,7 +175,7 @@ function saveAnimeToStorage(newAnime) {
       let originalText = '';
       if (btn) {
         originalText = btn.textContent;
-        btn.textContent = '✓ Added!';
+        btn.textContent = '✓ Saved!';
         btn.style.background = 'linear-gradient(135deg, #00d4ff 0%, #0099cc 100%)';
         setTimeout(() => {
           btn.textContent = originalText;
