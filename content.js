@@ -83,16 +83,17 @@ function initialize() {
  * Load settings and anime list from chrome.storage
  */
 function loadSettings() {
-  chrome.storage.sync.get(
-    ['spoilerShield', 'netflixAutoSkip', 'animeList'],
-    (result) => {
-      state.spoilerShieldEnabled =
-        result.spoilerShield !== undefined ? result.spoilerShield : true;
-      state.netflixAutoSkipEnabled =
-        result.netflixAutoSkip !== undefined ? result.netflixAutoSkip : true;
-      state.animeList = result.animeList || [];
-    }
-  );
+  // Settings live in sync; the anime list lives in local (see popup.js).
+  chrome.storage.sync.get(['spoilerShield', 'netflixAutoSkip'], (result) => {
+    state.spoilerShieldEnabled =
+      result.spoilerShield !== undefined ? result.spoilerShield : true;
+    state.netflixAutoSkipEnabled =
+      result.netflixAutoSkip !== undefined ? result.netflixAutoSkip : true;
+  });
+
+  chrome.storage.local.get(['animeList'], (result) => {
+    state.animeList = result.animeList || [];
+  });
 }
 
 // ============================================================================
@@ -378,6 +379,11 @@ function debounce(func, wait) {
  * Inject styles for spoiler blur effect
  */
 function injectStyles() {
+  // Don't double-inject if the script re-runs.
+  if (document.getElementById('anime-tracker-styles')) {
+    return;
+  }
+
   const styleSheet = document.createElement('style');
   styleSheet.id = 'anime-tracker-styles';
   styleSheet.textContent = `
@@ -395,7 +401,11 @@ function injectStyles() {
     }
   `;
 
-  document.head.appendChild(styleSheet);
+  // This script runs at document_start, so <head> may not exist yet.
+  // Fall back to <html> (documentElement), which is always present —
+  // a <style> there is honored by the browser just the same.
+  const target = document.head || document.documentElement;
+  target.appendChild(styleSheet);
 }
 
 // Inject styles on script load
