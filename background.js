@@ -3,13 +3,18 @@
  * Handles any background tasks and event listening
  */
 
-// Initialize storage with default values on extension install
+// Initialize storage with default values on extension install.
+// NOTE: animeList lives in chrome.storage.local (entries carry screenshot
+// thumbnails that exceed chrome.storage.sync's 8KB/item limit). Settings stay
+// in chrome.storage.sync so they can roam across devices and content.js can read them.
 chrome.runtime.onInstalled.addListener(() => {
-  chrome.storage.sync.get(['animeList', 'spoilerShield', 'netflixAutoSkip'], (result) => {
-    // Set defaults if not already set
+  chrome.storage.local.get(['animeList'], (result) => {
     if (!result.animeList) {
-      chrome.storage.sync.set({ animeList: [] });
+      chrome.storage.local.set({ animeList: [] });
     }
+  });
+
+  chrome.storage.sync.get(['spoilerShield', 'netflixAutoSkip'], (result) => {
     if (result.spoilerShield === undefined) {
       chrome.storage.sync.set({ spoilerShield: true });
     }
@@ -17,9 +22,6 @@ chrome.runtime.onInstalled.addListener(() => {
       chrome.storage.sync.set({ netflixAutoSkip: true });
     }
   });
-
-  // Optional: Open welcome/info page on first install
-  // chrome.tabs.create({ url: 'chrome-extension://' + chrome.runtime.id + '/popup.html' });
 });
 
 // Listen for storage changes to sync across extension components
@@ -42,7 +44,7 @@ chrome.storage.onChanged.addListener((changes, areaName) => {
 // Handle any extension messages
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.type === 'GET_ANIME_LIST') {
-    chrome.storage.sync.get(['animeList'], (result) => {
+    chrome.storage.local.get(['animeList'], (result) => {
       sendResponse({ animeList: result.animeList || [] });
     });
     return true; // Keep channel open for async response
