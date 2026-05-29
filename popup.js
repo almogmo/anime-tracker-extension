@@ -23,8 +23,8 @@ function initializePopup() {
   const form = document.getElementById('animeForm');
   const titleInput = document.getElementById('animeTitle');
   const episodeInput = document.getElementById('currentEpisode');
-  const animeUrlInput = document.getElementById('animeUrl');
-  const captureUrlBtn = document.getElementById('captureUrlBtn');
+  const urlPreviewGroup = document.getElementById('urlPreviewGroup');
+  const urlPreview = document.getElementById('urlPreview');
   const animeListContainer = document.getElementById('animeListContainer');
   const spoilerShieldToggle = document.getElementById('spoilerShield');
   const netflixAutoSkipToggle = document.getElementById('netflixAutoSkip');
@@ -62,36 +62,41 @@ function initializePopup() {
       return;
     }
 
-    // Create new anime object
-    const newAnime = {
-      id: Date.now(),
-      title: title,
-      episode: episode,
-      url: animeUrlInput.value || null,
-      imagePreview: null, // Will be set after screenshot
-      addedDate: new Date().toLocaleDateString(),
-    };
+    // Auto-capture current tab URL and screenshot
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      if (!tabs[0]) {
+        alert('Could not access current tab');
+        return;
+      }
 
-    console.log('[DEBUG] New anime object:', newAnime);
+      const currentUrl = tabs[0].url;
+      const currentWindowId = tabs[0].windowId;
 
-    // Capture screenshot of current tab if URL provided
-    if (animeUrlInput.value) {
-      chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-        if (tabs[0]) {
-          chrome.tabs.captureVisibleTab(tabs[0].windowId, { format: 'png' }, (screenshotUrl) => {
-            if (screenshotUrl) {
-              newAnime.imagePreview = screenshotUrl;
-              console.log('[DEBUG] Screenshot captured');
-            }
-            saveAnimeToStorage(newAnime);
-          });
+      console.log('[DEBUG] Auto-captured URL:', currentUrl);
+
+      // Create new anime object with captured URL
+      const newAnime = {
+        id: Date.now(),
+        title: title,
+        episode: episode,
+        url: currentUrl,
+        imagePreview: null, // Will be set after screenshot
+        addedDate: new Date().toLocaleDateString(),
+      };
+
+      console.log('[DEBUG] New anime object:', newAnime);
+
+      // Capture screenshot
+      chrome.tabs.captureVisibleTab(currentWindowId, { format: 'png' }, (screenshotUrl) => {
+        if (screenshotUrl) {
+          newAnime.imagePreview = screenshotUrl;
+          console.log('[DEBUG] Screenshot captured');
         } else {
-          saveAnimeToStorage(newAnime);
+          console.log('[DEBUG] Screenshot capture failed, continuing without preview');
         }
+        saveAnimeToStorage(newAnime);
       });
-    } else {
-      saveAnimeToStorage(newAnime);
-    }
+    });
   });
 }
 
@@ -151,18 +156,6 @@ function saveAnimeToStorage(newAnime) {
     });
   }
 
-  // Capture URL from current tab
-  if (captureUrlBtn) {
-    captureUrlBtn.addEventListener('click', () => {
-      console.log('[DEBUG] Capture URL button clicked');
-      chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-        if (tabs[0]) {
-          animeUrlInput.value = tabs[0].url;
-          console.log('[DEBUG] URL captured:', tabs[0].url);
-        }
-      });
-    });
-  }
 
   // Load initial data
   loadAnimeList();
