@@ -14,10 +14,7 @@ chrome.runtime.onInstalled.addListener(() => {
     }
   });
 
-  chrome.storage.sync.get(['spoilerShield', 'netflixAutoSkip'], (result) => {
-    if (result.spoilerShield === undefined) {
-      chrome.storage.sync.set({ spoilerShield: true });
-    }
+  chrome.storage.sync.get(['netflixAutoSkip'], (result) => {
     if (result.netflixAutoSkip === undefined) {
       chrome.storage.sync.set({ netflixAutoSkip: true });
     }

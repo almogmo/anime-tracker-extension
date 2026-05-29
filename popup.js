@@ -24,7 +24,6 @@ function initializePopup() {
   console.log('[DEBUG] initializePopup called');
 
   const form = document.getElementById('animeForm');
-  const spoilerShieldToggle = document.getElementById('spoilerShield');
   const netflixAutoSkipToggle = document.getElementById('netflixAutoSkip');
 
   if (!form) {
@@ -32,15 +31,10 @@ function initializePopup() {
     return;
   }
 
-  // Add anime on submit (button is type="submit").
+  // Save anime on submit (button is type="submit").
   form.addEventListener('submit', handleAddAnime);
 
-  // Settings toggles (stored in sync so content.js can read them).
-  if (spoilerShieldToggle) {
-    spoilerShieldToggle.addEventListener('change', () => {
-      chrome.storage.sync.set({ spoilerShield: spoilerShieldToggle.checked });
-    });
-  }
+  // Settings toggle (stored in sync so content.js can read it).
   if (netflixAutoSkipToggle) {
     netflixAutoSkipToggle.addEventListener('change', () => {
       chrome.storage.sync.set({ netflixAutoSkip: netflixAutoSkipToggle.checked });
@@ -273,13 +267,8 @@ function deleteAnime(animeId) {
  * Load feature toggle states from sync storage.
  */
 function loadSettings() {
-  chrome.storage.sync.get(['spoilerShield', 'netflixAutoSkip'], (result) => {
-    const spoilerShieldToggle = document.getElementById('spoilerShield');
+  chrome.storage.sync.get(['netflixAutoSkip'], (result) => {
     const netflixAutoSkipToggle = document.getElementById('netflixAutoSkip');
-
-    if (spoilerShieldToggle) {
-      spoilerShieldToggle.checked = result.spoilerShield !== false;
-    }
     if (netflixAutoSkipToggle) {
       netflixAutoSkipToggle.checked = result.netflixAutoSkip !== false;
     }
