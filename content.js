@@ -24,6 +24,10 @@ const state = {
 // INITIALIZATION
 // ============================================================================
 
+// Visible proof the script is running — appears in the page DevTools console
+// (the console is shared across worlds, even though JS globals are isolated).
+console.log('[Anime Tracker] content script active on', location.href);
+
 document.addEventListener('DOMContentLoaded', initialize, { once: true });
 if (document.readyState !== 'loading') {
   initialize();
@@ -186,11 +190,40 @@ function scheduleButtonClick(button, label) {
     pendingClickTimer = null;
     pendingButton = null;
     if (isButtonVisible(button)) {
-      button.focus();
-      button.click();
+      realisticClick(button);
       console.log('[Anime Tracker] Auto-clicked Netflix control:', label);
     }
   }, CONFIG.NETFLIX_SKIP_DELAY_MS);
+}
+
+/**
+ * Click an element the way a real user would. Netflix's controls often ignore
+ * a bare element.click(), so dispatch a full pointer + mouse event sequence
+ * (with a real click on coordinates) before falling back to .click().
+ */
+function realisticClick(el) {
+  const rect = el.getBoundingClientRect();
+  const cx = rect.left + rect.width / 2;
+  const cy = rect.top + rect.height / 2;
+  const base = { bubbles: true, cancelable: true, view: window, clientX: cx, clientY: cy, button: 0 };
+
+  try {
+    el.dispatchEvent(new PointerEvent('pointerover', base));
+    el.dispatchEvent(new PointerEvent('pointerenter', base));
+    el.dispatchEvent(new PointerEvent('pointerdown', base));
+    el.dispatchEvent(new MouseEvent('mousedown', base));
+    el.focus({ preventScroll: true });
+    el.dispatchEvent(new PointerEvent('pointerup', base));
+    el.dispatchEvent(new MouseEvent('mouseup', base));
+    el.dispatchEvent(new MouseEvent('click', base));
+  } catch (e) {
+    // Some environments can't construct PointerEvent — fall through.
+  }
+
+  // Final fallback — harmless if the dispatched click already registered.
+  if (typeof el.click === 'function') {
+    el.click();
+  }
 }
 
 /**
