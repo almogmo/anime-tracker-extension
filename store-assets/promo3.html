@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html,body { width:1280px; height:800px; overflow:hidden; font-family:'Segoe UI',-apple-system,sans-serif; }
+  body{display:flex;align-items:center;justify-content:center;gap:70px;padding:0 80px;position:relative;
+    background:linear-gradient(180deg,#f5a623 0%,#f7864f 22%,#f4615e 44%,#e24e7b 62%,#9e3a6e 80%,#16263f 100%);}
+  body::before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(180deg,rgba(255,255,255,.05) 0,rgba(255,255,255,.05) 1px,transparent 1px,transparent 9px);}
+  .mock{width:400px;border-radius:18px;overflow:hidden;z-index:1;box-shadow:0 30px 70px rgba(0,0,0,.45);background:#16263f;}
+  .mh{background:linear-gradient(180deg,#f5a623,#f7864f);padding:18px;text-align:center;}
+  .mh h2{color:#2a1530;font-size:20px;}
+  .mb{padding:18px;}
+  .title{color:#f5a623;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin:4px 0 12px;}
+  .item{background:rgba(16,27,48,.5);border:1px solid rgba(255,233,207,.18);border-left:3px solid #f4615e;border-radius:8px;padding:13px;margin-bottom:11px;display:flex;justify-content:space-between;align-items:center;}
+  .item h3{color:#fff;font-size:15px;}
+  .item .ep{color:#f5a623;font-size:12px;margin-top:3px;}
+  .item .lk{color:#00d4ff;font-size:11px;margin-top:3px;}
+  .num{background:#0d1a2e;border:1px solid #2a3a52;color:#e0e0e0;border-radius:5px;padding:5px 9px;font-size:13px;}
+  .right{z-index:1;color:#fff;max-width:520px;}
+  .right h1{font-size:56px;line-height:1.05;letter-spacing:-1px;text-shadow:0 3px 10px rgba(0,0,0,.3);}
+  .right p{font-size:24px;margin-top:18px;color:#fff5ec;line-height:1.45;}
+  .tag{display:inline-block;margin-top:26px;background:rgba(255,255,255,.16);padding:10px 20px;border-radius:24px;font-size:18px;font-weight:700;}
+</style></head><body>
+  <div class="mock">
+    <div class="mh"><h2>Your Anime List</h2></div>
+    <div class="mb">
+      <div class="title">Your Anime List</div>
+      <div class="item"><div><h3>Frieren</h3><div class="ep">Ep: 18</div><div class="lk">Open link →</div></div><span class="num">18</span></div>
+      <div class="item"><div><h3>One Piece</h3><div class="ep">Ep: 1095</div><div class="lk">Open link →</div></div><span class="num">1095</span></div>
+      <div class="item"><div><h3>Solo Leveling</h3><div class="ep">Ep: 7</div><div class="lk">Open link →</div></div><span class="num">7</span></div>
+    </div>
+  </div>
+  <div class="right">
+    <h1>Pick up right where you left off</h1>
+    <p>Save the episode you're on and the exact page link — one click takes you back.</p>
+    <span class="tag">📺 All stored on your device</span>
+  </div>
+</body></html>

@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html,body { width:1280px; height:800px; overflow:hidden; font-family:'Segoe UI',-apple-system,sans-serif; }
+  body{position:relative;background:#0b0b0b;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+  /* fake netflix player */
+  .player{position:absolute;inset:0;background:radial-gradient(circle at 50% 40%,#1a1a1a 0%,#000 100%);}
+  .badge{position:absolute;left:60px;bottom:120px;padding:15px 24px;border-radius:14px;font-size:24px;font-weight:800;color:#fff;
+    background:linear-gradient(180deg,#f7864f,#e24e7b);box-shadow:0 8px 28px rgba(0,0,0,.6);z-index:3;}
+  .nfbtn{position:absolute;right:60px;bottom:120px;background:rgba(255,255,255,.92);color:#111;font-weight:700;font-size:20px;
+    padding:14px 26px;border-radius:6px;z-index:3;display:flex;align-items:center;gap:10px;}
+  .head{z-index:3;text-align:center;color:#fff;}
+  .head h1{font-size:58px;letter-spacing:-1px;text-shadow:0 3px 12px rgba(0,0,0,.6);}
+  .head .accent{background:linear-gradient(180deg,#f5a623,#e24e7b);-webkit-background-clip:text;background-clip:text;color:transparent;}
+  .head p{font-size:26px;margin-top:16px;color:#d9d9d9;font-weight:500;}
+  .chips{display:flex;gap:12px;justify-content:center;margin-top:30px;flex-wrap:wrap;max-width:900px;}
+  .chip{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);color:#fff;padding:8px 16px;border-radius:20px;font-size:17px;font-weight:600;}
+</style></head><body>
+  <div class="player"></div>
+  <div class="head">
+    <h1>Never touch the <span class="accent">Skip</span> button again</h1>
+    <p>Auto-skips intros &amp; rolls into the next episode — in any language.</p>
+    <div class="chips">
+      <span class="chip">English</span><span class="chip">עברית</span><span class="chip">Español</span>
+      <span class="chip">日本語</span><span class="chip">Français</span><span class="chip">한국어</span><span class="chip">العربية</span>
+    </div>
+  </div>
+  <div class="badge">⏭ Auto-Skip active</div>
+  <div class="nfbtn">▶ Next Episode</div>
+</body></html>
