@@ -9,14 +9,12 @@
 // ============================================================================
 
 const CONFIG = {
-  NETFLIX_SKIP_DELAY_MS: 1000,        // wait before auto-clicking a found button
-  MUTATION_OBSERVER_DEBOUNCE_MS: 250, // coalesce rapid DOM mutations
-  POLL_INTERVAL_MS: 1000,             // safety-net poll for attribute-only changes
+  NETFLIX_SKIP_DELAY_MS: 1000, // wait before auto-clicking a found button
+  POLL_INTERVAL_MS: 1000,      // how often to scan for skip / next-episode controls
 };
 
 const state = {
   netflixAutoSkipEnabled: true,
-  isNetflixPage: false,
   netflixInitialized: false,
 };
 
@@ -28,36 +26,23 @@ const state = {
 // (the console is shared across worlds, even though JS globals are isolated).
 console.log('[Anime Tracker] content script active on', location.href);
 
-document.addEventListener('DOMContentLoaded', initialize, { once: true });
-if (document.readyState !== 'loading') {
-  initialize();
-}
+// Load the on/off setting (default on) and keep it in sync with the popup.
+chrome.storage.sync.get(['netflixAutoSkip'], (result) => {
+  state.netflixAutoSkipEnabled = result.netflixAutoSkip !== false;
+});
+chrome.storage.onChanged.addListener((changes) => {
+  if (changes.netflixAutoSkip) {
+    state.netflixAutoSkipEnabled = changes.netflixAutoSkip.newValue !== false;
+  }
+});
 
-function initialize() {
-  state.isNetflixPage = isNetflixURL();
-  loadSettings();
-
-  // React to setting changes from the popup.
-  chrome.storage.onChanged.addListener((changes) => {
-    if (changes.netflixAutoSkip) {
-      state.netflixAutoSkipEnabled = changes.netflixAutoSkip.newValue !== false;
-      if (state.netflixAutoSkipEnabled && state.isNetflixPage) {
-        initNetflixAutoSkip();
-      }
-    }
-  });
-}
-
-/**
- * Load feature settings from sync storage, then start Netflix auto-skip if on.
- */
-function loadSettings() {
-  chrome.storage.sync.get(['netflixAutoSkip'], (result) => {
-    state.netflixAutoSkipEnabled = result.netflixAutoSkip !== false;
-    if (state.netflixAutoSkipEnabled && state.isNetflixPage) {
-      initNetflixAutoSkip();
-    }
-  });
+// Bulletproof watcher: a single always-on poll, started at script load.
+// It does NOT depend on DOMContentLoaded or on the page being a /watch URL at
+// load time — so SPA navigation between episodes works WITHOUT a refresh.
+// Timers live in the content script's isolated world and survive Netflix's
+// in-app navigation, so this keeps firing as you move between episodes.
+if (isNetflixURL()) {
+  startNetflixWatcher();
 }
 
 // ============================================================================
@@ -99,32 +84,32 @@ const NETFLIX_TEXT_KEYWORDS = [
 ];
 
 /**
- * Start watching for Netflix skip / next-episode controls.
+ * Start the always-on Netflix watcher. Safe to call once at script load —
+ * it polls regardless of DOM-ready state or SPA navigation.
  */
-function initNetflixAutoSkip() {
+let lastWatchPath = '';
+function startNetflixWatcher() {
   if (state.netflixInitialized) {
     return;
   }
   state.netflixInitialized = true;
 
-  // Visible confirmation that the script is live on this page.
-  showBadge('⏭ Auto-Skip active');
-
-  // Check immediately.
-  skipNextButton();
-
-  // Watch the DOM for new controls.
-  const observer = new MutationObserver(
-    debounce(skipNextButton, CONFIG.MUTATION_OBSERVER_DEBOUNCE_MS)
-  );
-  observer.observe(document.body, { childList: true, subtree: true, characterData: true });
-
-  // Safety-net poll: the observer misses pure attribute toggles (e.g. the
-  // seamless "next episode" countdown), so also check on an interval.
+  // Single persistent poll. Timers survive Netflix's in-app navigation, so this
+  // keeps working across episodes with no page refresh.
   setInterval(() => {
-    if (state.netflixAutoSkipEnabled) {
-      skipNextButton();
+    if (!state.netflixAutoSkipEnabled) {
+      return;
     }
+
+    // Re-show the badge each time we land on a new /watch/<id> page (SPA nav),
+    // so the user gets confirmation per episode.
+    const path = location.pathname;
+    if (path.includes('/watch/') && path !== lastWatchPath) {
+      lastWatchPath = path;
+      showBadge('⏭ Auto-Skip active');
+    }
+
+    skipNextButton();
   }, CONFIG.POLL_INTERVAL_MS);
 }
 
@@ -284,20 +269,13 @@ function isNetflixURL() {
 }
 
 // ============================================================================
-// UTILITIES
+// DEBUG HELPER
 // ============================================================================
 
-function debounce(func, wait) {
-  let timeout;
-  return function (...args) {
-    clearTimeout(timeout);
-    timeout = setTimeout(() => func(...args), wait);
-  };
-}
-
-// Debug helper — run testNetflixSkip() in the page console.
+// Note: content scripts run in an isolated world, so this is NOT callable from
+// the page's DevTools console. It exists for in-script reference only.
 window.testNetflixSkip = () => {
   console.log('[Anime Tracker] netflixAutoSkip:', state.netflixAutoSkipEnabled,
-    '| isNetflixPage:', state.isNetflixPage);
+    '| isNetflix:', isNetflixURL());
   skipNextButton();
 };
