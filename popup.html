@@ -11,35 +11,75 @@
       box-sizing: border-box;
     }
 
+    /* ===== Sunset palette ===== */
+    :root {
+      --amber:   #f5a623;
+      --orange:  #f7864f;
+      --coral:   #f4615e;
+      --pink:    #e24e7b;
+      --magenta: #c43d77;
+      --navy:    #16263f;
+      --navy-2:  #0f1b30;
+      --cream:   #ffe9cf;
+    }
+
     body {
       width: 420px;
-      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-      color: #e0e0e0;
+      color: #f3e9df;
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       overflow-x: hidden;
+      position: relative;
+      /* vertical sunset gradient */
+      background:
+        linear-gradient(180deg,
+          #f5a623 0%,
+          #f7864f 20%,
+          #f4615e 40%,
+          #e24e7b 58%,
+          #9e3a6e 76%,
+          #16263f 100%);
     }
+
+    /* faint horizontal "scanlines" texture over everything */
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background: repeating-linear-gradient(
+        180deg,
+        rgba(255, 255, 255, 0.05) 0px,
+        rgba(255, 255, 255, 0.05) 1px,
+        transparent 1px,
+        transparent 7px
+      );
+      z-index: 0;
+    }
+
+    body > * { position: relative; z-index: 1; }
 
     /* Header */
     header {
-      background: linear-gradient(135deg, #0f3460 0%, #533483 100%);
-      padding: 20px;
+      background: linear-gradient(180deg, rgba(245,166,35,0.95) 0%, rgba(247,134,79,0.9) 100%);
+      padding: 22px 20px;
       text-align: center;
-      border-bottom: 2px solid #e94560;
-      box-shadow: 0 4px 15px rgba(233, 69, 96, 0.3);
+      border-bottom: 2px solid rgba(255,255,255,0.35);
+      box-shadow: 0 4px 18px rgba(196, 61, 119, 0.35);
     }
 
     h1 {
       font-size: 24px;
       margin-bottom: 5px;
-      color: #fff;
-      text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+      color: #2a1530;
+      text-shadow: 0 1px 0 rgba(255, 255, 255, 0.35);
       letter-spacing: 1px;
     }
 
     .subtitle {
       font-size: 12px;
-      color: #b0b0b0;
+      color: #4a1f3a;
       font-style: italic;
+      font-weight: 600;
     }
 
     /* Main Container */
@@ -49,65 +89,53 @@
       overflow-y: auto;
     }
 
-    .container::-webkit-scrollbar {
-      width: 6px;
-    }
+    .container::-webkit-scrollbar { width: 6px; }
+    .container::-webkit-scrollbar-track { background: rgba(0,0,0,0.15); }
+    .container::-webkit-scrollbar-thumb { background: var(--coral); border-radius: 3px; }
+    .container::-webkit-scrollbar-thumb:hover { background: var(--pink); }
 
-    .container::-webkit-scrollbar-track {
-      background: #1a1a2e;
-    }
-
-    .container::-webkit-scrollbar-thumb {
-      background: #e94560;
-      border-radius: 3px;
-    }
-
-    .container::-webkit-scrollbar-thumb:hover {
-      background: #ff6b7a;
-    }
-
-    /* Input Section */
-    .input-section {
-      background: rgba(15, 52, 96, 0.5);
+    /* Cards — translucent deep navy so the sunset glows behind */
+    .input-section,
+    .settings-section {
+      background: rgba(16, 27, 48, 0.55);
       padding: 16px;
-      border-radius: 8px;
-      border: 1px solid #e94560;
+      border-radius: 10px;
+      border: 1px solid rgba(255, 233, 207, 0.25);
       margin-bottom: 20px;
-      backdrop-filter: blur(10px);
+      backdrop-filter: blur(8px);
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
     }
 
-    .form-group {
-      margin-bottom: 12px;
-    }
+    .form-group { margin-bottom: 12px; }
 
     label {
       display: block;
       font-size: 12px;
-      font-weight: 600;
+      font-weight: 700;
       margin-bottom: 6px;
-      color: #00d4ff;
+      color: var(--amber);
       text-transform: uppercase;
       letter-spacing: 0.5px;
     }
 
     input[type="text"],
-    input[type="number"] {
+    input[type="number"],
+    input[type="url"] {
       width: 100%;
       padding: 10px 12px;
-      background: #0d0d1f;
-      border: 1px solid #333;
+      background: rgba(8, 14, 28, 0.7);
+      border: 1px solid rgba(255, 233, 207, 0.2);
       border-radius: 6px;
-      color: #e0e0e0;
+      color: #f3e9df;
       font-size: 14px;
-      transition: all 0.3s ease;
+      transition: all 0.25s ease;
     }
 
-    input[type="text"]:focus,
-    input[type="number"]:focus {
+    input:focus {
       outline: none;
-      border-color: #e94560;
-      box-shadow: 0 0 10px rgba(233, 69, 96, 0.3);
-      background: #1a1a2e;
+      border-color: var(--coral);
+      box-shadow: 0 0 12px rgba(244, 97, 94, 0.4);
+      background: rgba(16, 27, 48, 0.9);
     }
 
     .button-group {
@@ -118,56 +146,42 @@
 
     button {
       flex: 1;
-      padding: 10px 16px;
+      padding: 11px 16px;
       border: none;
       border-radius: 6px;
       font-size: 13px;
-      font-weight: 600;
+      font-weight: 700;
       cursor: pointer;
-      transition: all 0.3s ease;
+      transition: all 0.25s ease;
       text-transform: uppercase;
       letter-spacing: 0.5px;
     }
 
     .btn-add {
-      background: linear-gradient(135deg, #e94560 0%, #ff6b7a 100%);
-      color: white;
+      background: linear-gradient(180deg, var(--orange) 0%, var(--pink) 100%);
+      color: #fff;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.25);
     }
 
     .btn-add:hover {
       transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(233, 69, 96, 0.4);
+      box-shadow: 0 8px 22px rgba(226, 78, 123, 0.45);
     }
 
-    .btn-add:active {
-      transform: translateY(0);
-    }
+    .btn-add:active { transform: translateY(0); }
 
     .btn-clear {
-      background: #2a2a3e;
-      color: #b0b0b0;
-      border: 1px solid #444;
+      background: rgba(255, 255, 255, 0.08);
+      color: #f3e9df;
+      border: 1px solid rgba(255, 233, 207, 0.25);
     }
 
-    .btn-clear:hover {
-      background: #3a3a4e;
-      color: #e0e0e0;
-    }
-
-    /* Settings Section */
-    .settings-section {
-      background: rgba(15, 52, 96, 0.5);
-      padding: 16px;
-      border-radius: 8px;
-      border: 1px solid #333;
-      margin-bottom: 20px;
-      backdrop-filter: blur(10px);
-    }
+    .btn-clear:hover { background: rgba(255, 255, 255, 0.16); }
 
     .settings-title {
       font-size: 13px;
-      font-weight: 600;
-      color: #00d4ff;
+      font-weight: 700;
+      color: var(--amber);
       text-transform: uppercase;
       margin-bottom: 12px;
       letter-spacing: 0.5px;
@@ -183,7 +197,7 @@
     .toggle-switch label {
       margin: 0;
       font-size: 13px;
-      color: #e0e0e0;
+      color: #f3e9df;
       text-transform: none;
     }
 
@@ -194,23 +208,16 @@
       height: 24px;
     }
 
-    .switch input {
-      opacity: 0;
-      width: 0;
-      height: 0;
-    }
+    .switch input { opacity: 0; width: 0; height: 0; }
 
     .slider {
       position: absolute;
       cursor: pointer;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background-color: #2a2a3e;
+      inset: 0;
+      background-color: rgba(255, 255, 255, 0.15);
       transition: 0.3s;
       border-radius: 24px;
-      border: 1px solid #444;
+      border: 1px solid rgba(255, 233, 207, 0.25);
     }
 
     .slider:before {
@@ -220,114 +227,84 @@
       width: 18px;
       left: 3px;
       bottom: 2px;
-      background-color: white;
+      background-color: #fff;
       transition: 0.3s;
       border-radius: 50%;
     }
 
     input:checked + .slider {
-      background: linear-gradient(135deg, #e94560 0%, #ff6b7a 100%);
-      border-color: #e94560;
+      background: linear-gradient(180deg, var(--orange) 0%, var(--pink) 100%);
+      border-color: var(--coral);
     }
 
-    input:checked + .slider:before {
-      transform: translateX(24px);
-    }
+    input:checked + .slider:before { transform: translateX(24px); }
 
     /* Anime List */
-    .anime-list {
-      margin-top: 10px;
-    }
+    .anime-list { margin-top: 10px; }
 
     .anime-item {
-      background: rgba(83, 52, 131, 0.2);
+      background: rgba(16, 27, 48, 0.5);
       padding: 14px;
-      border-radius: 6px;
+      border-radius: 8px;
       margin-bottom: 10px;
-      border-left: 3px solid #e94560;
+      border-left: 3px solid var(--coral);
       display: flex;
       justify-content: space-between;
       align-items: center;
-      transition: all 0.3s ease;
-      border: 1px solid rgba(233, 69, 96, 0.3);
+      transition: all 0.25s ease;
+      border: 1px solid rgba(255, 233, 207, 0.18);
+      border-left: 3px solid var(--coral);
     }
 
     .anime-item:hover {
-      background: rgba(83, 52, 131, 0.35);
-      border-color: #e94560;
-      box-shadow: 0 4px 12px rgba(233, 69, 96, 0.2);
+      background: rgba(196, 61, 119, 0.18);
+      box-shadow: 0 4px 14px rgba(226, 78, 123, 0.25);
     }
 
-    .anime-info h3 {
-      font-size: 14px;
-      color: #fff;
-      margin-bottom: 4px;
-    }
+    .anime-info h3 { font-size: 14px; color: #fff; margin-bottom: 4px; }
+    .anime-info p { font-size: 12px; color: var(--amber); }
 
-    .anime-info p {
-      font-size: 12px;
-      color: #00d4ff;
-    }
-
-    .anime-actions {
-      display: flex;
-      gap: 6px;
-    }
+    .anime-actions { display: flex; gap: 6px; }
 
     .btn-small {
       padding: 6px 10px;
       font-size: 11px;
-      background: #2a2a3e;
-      color: #b0b0b0;
-      border: 1px solid #444;
+      background: rgba(255, 255, 255, 0.08);
+      color: #f3e9df;
+      border: 1px solid rgba(255, 233, 207, 0.22);
       border-radius: 4px;
       cursor: pointer;
       transition: all 0.2s ease;
     }
 
-    .btn-small:hover {
-      background: #3a3a4e;
-      color: #e0e0e0;
-      border-color: #e94560;
-    }
+    .btn-small:hover { background: rgba(255, 255, 255, 0.16); border-color: var(--coral); }
 
     .btn-delete {
-      background: rgba(233, 69, 96, 0.2);
-      color: #ff6b7a;
-      border-color: #e94560;
+      background: rgba(244, 97, 94, 0.18);
+      color: #ffd0cd;
+      border-color: var(--coral);
     }
 
-    .btn-delete:hover {
-      background: #e94560;
-      color: white;
-    }
+    .btn-delete:hover { background: var(--coral); color: #fff; }
 
     /* Empty State */
     .empty-state {
       text-align: center;
       padding: 30px 20px;
-      color: #666;
+      color: rgba(243, 233, 223, 0.7);
     }
 
-    .empty-state-icon {
-      font-size: 40px;
-      margin-bottom: 10px;
-      opacity: 0.6;
-    }
-
-    .empty-state p {
-      font-size: 13px;
-      color: #888;
-    }
+    .empty-state-icon { font-size: 40px; margin-bottom: 10px; opacity: 0.6; }
+    .empty-state p { font-size: 13px; color: rgba(243, 233, 223, 0.65); }
 
     /* Footer */
     footer {
-      background: rgba(15, 20, 40, 0.8);
+      background: rgba(15, 27, 48, 0.85);
       padding: 12px;
       text-align: center;
-      border-top: 1px solid #333;
+      border-top: 1px solid rgba(255, 233, 207, 0.2);
       font-size: 11px;
-      color: #666;
+      color: rgba(243, 233, 223, 0.6);
     }
   </style>
 </head>
