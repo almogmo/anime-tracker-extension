@@ -5,13 +5,7 @@
   "description": "Track your anime episodes and let Netflix skip intros & jump to the next episode automatically — in any language.",
   "permissions": [
     "storage",
-    "scripting",
-    "activeTab",
-    "webRequest",
     "tabs"
-  ],
-  "host_permissions": [
-    "<all_urls>"
   ],
   "action": {
     "default_popup": "popup.html",
@@ -29,7 +23,7 @@
   "content_scripts": [
     {
       "matches": [
-        "<all_urls>"
+        "*://*.netflix.com/*"
       ],
       "js": [
         "content.js"
