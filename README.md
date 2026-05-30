@@ -1,32 +1,22 @@
 # 🎌 Anime Fans Tracker
 
-A powerful Chrome Extension (Manifest V3) for anime enthusiasts that helps you track episodes, block spoilers, and automatically skip Netflix intros/credits.
+A lightweight Chrome Extension (Manifest V3) for anime watchers: track the episode you're on, and let Netflix skip intros and roll into the next episode automatically — in any language.
 
 ## Features
 
 ### 📺 Episode Tracker
-- **Save & Track**: Keep track of your current episode for multiple anime shows
-- **Quick Updates**: Easily update episodes directly from the popup
-- **Persistent Storage**: All data is synced across your Chrome devices via `chrome.storage.sync`
-
-### 🛡️ Anti-Spoiler Shield
-- **Smart Keyword Detection**: Automatically detects and blurs content containing spoiler keywords
-- **Ctrl+Click to Unblur**: Users can hold Ctrl and click to unblur specific spoilers
-- **Intelligent Scanning**: Skips navigation elements and only targets content areas
-- **Real-time Protection**: Continuously monitors for new content and applies blur effect
-
-**Spoiler Keywords Include:**
-- Character deaths and plot reveals
-- Relationship developments
-- Power-ups and transformations
-- Major plot twists
-- And 20+ more contextually relevant terms
+- **Save & Track**: Keep the current episode for every anime you're watching
+- **Auto-Saved Link**: The link to the page you're on is captured automatically, so you can jump right back to where you left off
+- **Quick Updates**: Change the episode number directly from the popup
+- **Local Storage**: Everything is stored on your device (`chrome.storage.local`) — no account, no tracking
 
 ### ⏭️ Netflix Auto-Skip
-- **Automatic Skip**: Automatically clicks "Skip Intro" and "Skip Credits" buttons after 1 second
-- **Smart Detection**: Finds buttons by multiple selectors to handle Netflix's changing UI
-- **Non-Intrusive**: 1-second delay allows you to cancel if needed
-- **Visibility Check**: Only clicks buttons that are actually visible on screen
+- **Skip the intro/recap**: Auto-clicks "Skip Intro" / "Skip Recap" at the start of an episode
+- **Seamless next episode**: Advances to the next episode only when the end credits roll — never from 0:00
+- **Works in every language**: Uses Netflix's built-in button identifiers (`data-uia`), not on-screen text, with a multilingual text fallback for the skip button
+- **No refresh needed**: Keeps working across episodes through Netflix's in-app navigation
+- **On-screen badge**: A small "⏭ Auto-Skip active" badge confirms it's running; it flashes "⏭ Skipped" on each auto-click
+- **Toggle**: Turn it on/off from the popup
 
 ## Installation
 

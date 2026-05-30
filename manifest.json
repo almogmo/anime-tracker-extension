@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Anime Fans Tracker",
   "version": "1.0.0",
-  "description": "Track your anime episodes and auto-skip Netflix intros/credits",
+  "description": "Track your anime episodes and let Netflix skip intros & jump to the next episode automatically — in any language.",
   "permissions": [
     "storage",
     "scripting",
