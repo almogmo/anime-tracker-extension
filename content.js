@@ -107,6 +107,9 @@ function initNetflixAutoSkip() {
   }
   state.netflixInitialized = true;
 
+  // Visible confirmation that the script is live on this page.
+  showBadge('⏭ Auto-Skip active');
+
   // Check immediately.
   skipNextButton();
 
@@ -191,9 +194,53 @@ function scheduleButtonClick(button, label) {
     pendingButton = null;
     if (isButtonVisible(button)) {
       realisticClick(button);
+      showBadge('⏭ Skipped');
       console.log('[Anime Tracker] Auto-clicked Netflix control:', label);
     }
   }, CONFIG.NETFLIX_SKIP_DELAY_MS);
+}
+
+/**
+ * Show a small on-screen badge so the user can SEE the script is working
+ * without opening DevTools. Re-parents to the fullscreen element when the
+ * player is fullscreen (otherwise a body-level element wouldn't render).
+ */
+let badgeEl = null;
+let badgeTimer = null;
+function showBadge(text) {
+  const parent = document.fullscreenElement || document.body;
+  if (!parent) return;
+
+  if (!badgeEl) {
+    badgeEl = document.createElement('div');
+    Object.assign(badgeEl.style, {
+      position: 'fixed',
+      left: '16px',
+      bottom: '16px',
+      zIndex: '2147483647',
+      padding: '8px 14px',
+      borderRadius: '10px',
+      font: '700 13px/1.2 system-ui, -apple-system, sans-serif',
+      color: '#fff',
+      background: 'linear-gradient(180deg, #f7864f 0%, #e24e7b 100%)',
+      boxShadow: '0 4px 16px rgba(0,0,0,0.45)',
+      pointerEvents: 'none',
+      opacity: '0',
+      transition: 'opacity 0.35s ease',
+    });
+  }
+
+  // Keep it inside whichever element is fullscreen (or body).
+  if (badgeEl.parentElement !== parent) {
+    parent.appendChild(badgeEl);
+  }
+
+  badgeEl.textContent = text;
+  badgeEl.style.opacity = '1';
+  clearTimeout(badgeTimer);
+  badgeTimer = setTimeout(() => {
+    if (badgeEl) badgeEl.style.opacity = '0';
+  }, 2500);
 }
 
 /**
