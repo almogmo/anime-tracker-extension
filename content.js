@@ -50,37 +50,40 @@ if (isNetflixURL()) {
 // ============================================================================
 
 // Netflix's stable, language-independent button identifiers (data-uia).
-// These work in EVERY UI language with no translation — Netflix keeps these
-// attributes identical regardless of the user's language.
+// CRITICAL: we deliberately do NOT match the always-present "Next Episode"
+// control in the player toolbar (it would jump to the next episode at 0:00).
+// We only match:
+//   - skip intro / recap / preplay — appear near the START of an episode
+//   - the SEAMLESS next-episode prompt — appears only during the END credits
 const NETFLIX_UIA_SELECTORS = [
   '[data-uia="player-skip-intro"]',
   '[data-uia="player-skip-recap"]',
   '[data-uia="player-skip-preplay"]',
   '[data-uia="next-episode-seamless-button"]',
   '[data-uia="next-episode-seamless-button-draining"]',
-  '[data-uia*="skip"]',
-  '[data-uia*="next-episode"]',
 ];
 
-// Fallback text/aria keywords for "skip" and "next" across ~15 languages.
-// The safety net that makes it "work in every language" without an external
-// translation API. All lowercase for case-insensitive matching.
-const NETFLIX_TEXT_KEYWORDS = [
-  'skip', 'next episode', 'play next',               // English
-  'דלג', 'הפרק הבא', 'הבא',                            // Hebrew
-  'omitir', 'saltar', 'siguiente episodio',          // Spanish
-  'passer', 'ignorer', 'épisode suivant',            // French
-  'überspringen', 'nächste folge',                   // German
-  'salta', 'prossimo episodio',                      // Italian
-  'pular', 'ignorar', 'próximo episódio',            // Portuguese
-  'overslaan', 'volgende aflevering',                // Dutch
-  'пропустить', 'следующий эпизод',                  // Russian
-  'atla', 'sonraki bölüm',                           // Turkish
-  'pomiń', 'następny odcinek',                       // Polish
-  'تخطي', 'الحلقة التالية',                            // Arabic
-  'スキップ', '次のエピソード',                          // Japanese
-  '건너뛰기', '다음 회',                                // Korean
-  '跳过', '下一集',                                    // Chinese (Simplified)
+// Text/aria fallback for the SKIP-INTRO button across ~15 languages, for the
+// rare case Netflix changes its data-uia. Intentionally "skip"-only — we do
+// NOT include "next episode" words, because those match the persistent toolbar
+// control and would skip to the next episode from 0:00. Next-episode advancing
+// is handled solely by the seamless data-uia above (language-independent).
+const NETFLIX_SKIP_KEYWORDS = [
+  'skip intro', 'skip recap', 'skip',  // English
+  'דלג',                                // Hebrew
+  'omitir', 'saltar',                   // Spanish
+  'passer', 'ignorer',                  // French
+  'überspringen',                       // German
+  'salta',                              // Italian
+  'pular', 'ignorar',                   // Portuguese
+  'overslaan',                          // Dutch
+  'пропустить',                         // Russian
+  'atla',                               // Turkish
+  'pomiń',                              // Polish
+  'تخطي',                                // Arabic
+  'スキップ',                            // Japanese
+  '건너뛰기',                            // Korean
+  '跳过',                                // Chinese (Simplified)
 ];
 
 /**
@@ -130,14 +133,16 @@ function skipNextButton() {
     }
   }
 
-  // 2) Fall back to scanning buttons by text / aria-label (multilingual).
+  // 2) Fall back to scanning buttons for a SKIP-INTRO label (multilingual).
+  //    Skip-only — never "next episode" — so we don't trigger the toolbar's
+  //    persistent next-episode control and jump ahead at 0:00.
   const buttons = document.querySelectorAll('button, [role="button"]');
   for (const button of buttons) {
     const text = (button.textContent || '').toLowerCase();
     const ariaLabel = (button.getAttribute('aria-label') || '').toLowerCase();
     const haystack = text + ' ' + ariaLabel;
 
-    if (NETFLIX_TEXT_KEYWORDS.some((kw) => haystack.includes(kw)) && isButtonVisible(button)) {
+    if (NETFLIX_SKIP_KEYWORDS.some((kw) => haystack.includes(kw)) && isButtonVisible(button)) {
       scheduleButtonClick(button, haystack.trim().slice(0, 40));
       return; // one button at a time
     }
